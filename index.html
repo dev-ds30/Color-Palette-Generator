@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Palette Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e293b 0%, #7c3aed 50%, #1e293b 100%);
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.125rem;
+            color: #d8b4fe;
+        }
+
+        .controls {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .control-group label {
+            display: block;
+            color: white;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        select, input[type="range"], button {
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+        }
+
+        select {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        select option {
+            background: #1e293b;
+            color: white;
+        }
+
+        input[type="range"] {
+            height: 0.5rem;
+            background: rgba(255,255,255,0.2);
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+            cursor: pointer;
+        }
+
+        .btn-generate {
+            background: #7c3aed;
+            color: white;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-generate:hover {
+            background: #6d28d9;
+        }
+
+        .info-box {
+            display: flex;
+            gap: 0.5rem;
+            color: #d8b4fe;
+            font-size: 0.875rem;
+            background: rgba(255,255,255,0.05);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            background: white;
+            color: #7c3aed;
+        }
+
+        .tab:not(.active) {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .tab:not(.active):hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .palette-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .color-item {
+            text-align: center;
+        }
+
+        .color-box {
+            aspect-ratio: 1;
+            border-radius: 1rem;
+            cursor: pointer;
+            border: 4px solid rgba(255,255,255,0.3);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+        }
+
+        .color-box:hover {
+            transform: scale(1.05);
+        }
+
+        .color-button {
+            margin-top: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 0.875rem;
+            width: 100%;
+        }
+
+        .mockups {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .mockup-header {
+            background: white;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .mockup-nav {
+            padding: 1.5rem;
+        }
+
+        .mockup-nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .mockup-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .mockup-menu {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .mockup-menu-item {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .mockup-content {
+            padding: 2rem;
+        }
+
+        .mockup-title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .mockup-text {
+            margin-bottom: 1.5rem;
+        }
+
+        .mockup-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .card-image {
+            height: 8rem;
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .buttons-section {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .buttons-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            color: #1f2937;
+        }
+
+        .buttons-flex {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .demo-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .export-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .export-card {
+            padding: 1.5rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 1rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            cursor: pointer;
+            text-align: center;
+            transition: background 0.2s;
+        }
+
+        .export-card:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .export-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .export-title {
+            color: white;
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+
+        .export-subtitle {
+            color: #d8b4fe;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .code-preview {
+            background: #1e293b;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 1rem;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .code-header h3 {
+            color: white;
+            font-weight: 600;
+        }
+
+        .code-copy {
+            background: transparent;
+            border: none;
+            color: #a78bfa;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.25rem;
+        }
+
+        pre {
+            color: #86efac;
+            font-size: 0.875rem;
+            overflow: auto;
+            margin: 0;
+        }
+
+        .json-preview {
+            color: #fde047;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .mockup-nav-content {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Color Palette Generator</h1>
+            <p>Create beautiful color schemes with color theory</p>
+        </div>
+
+        <div class="controls">
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label>Color Theory</label>
+                    <select id="paletteType">
+                        <option value="complementary">Complementary</option>
+                        <option value="analogous">Analogous</option>
+                        <option value="triadic">Triadic</option>
+                        <option value="monochromatic">Monochromatic</option>
+                        <option value="tetradic">Tetradic</option>
+                        <option value="random">Random</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Colors: <span id="colorCountLabel">5</span></label>
+                    <input type="range" id="colorCount" min="5" max="8" value="5">
+                </div>
+
+                <div class="control-group" style="display: flex; align-items: flex-end;">
+                    <button class="btn-generate" id="generateBtn">🔄 Generate</button>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <span>ℹ️</span>
+                <p id="theoryInfo">Colors opposite on the color wheel. High contrast and vibrant.</p>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="palette">Palette</button>
+            <button class="tab" data-tab="mockups">Mockups</button>
+            <button class="tab" data-tab="export">Export</button>
+        </div>
+
+        <div id="paletteTab" class="tab-content">
+            <div class="palette-grid" id="paletteGrid"></div>
+        </div>
+
+        <div id="mockupsTab" class="tab-content hidden">
+            <div class="mockups" id="mockupsContent"></div>
+        </div>
+
+        <div id="exportTab" class="tab-content hidden">
+            <div class="export-grid">
+                <div class="export-card" id="exportCSS">
+                    <div class="export-icon">📥</div>
+                    <div class="export-title">Export CSS</div>
+                    <div class="export-subtitle">CSS Variables</div>
+                </div>
+                <div class="export-card" id="exportJSON">
+                    <div class="export-icon">📥</div>
+                    <div class="export-title">Export JSON</div>
+                    <div class="export-subtitle">Data format</div>
+                </div>
+                <div class="export-card" id="exportImage">
+                    <div class="export-icon">📥</div>
+                    <div class="export-title">Export Image</div>
+                    <div class="export-subtitle">PNG format</div>
+                </div>
+            </div>
+
+            <div class="code-preview">
+                <div class="code-header">
+                    <h3>CSS Preview</h3>
+                    <button class="code-copy" id="copyCSSBtn">📋</button>
+                </div>
+                <pre id="cssPreview"></pre>
+            </div>
+
+            <div class="code-preview">
+                <div class="code-header">
+                    <h3>JSON Preview</h3>
+                    <button class="code-copy" id="copyJSONBtn">📋</button>
+                </div>
+                <pre id="jsonPreview" class="json-preview"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let colors = [];
+        let paletteType = 'complementary';
+        let colorCount = 5;
+
+        const theoryInfo = {
+            complementary: 'Colors opposite on the color wheel. High contrast and vibrant.',
+            analogous: 'Adjacent colors on the wheel. Harmonious and serene.',
+            triadic: 'Three evenly spaced colors. Vibrant yet balanced.',
+            monochromatic: 'Variations of one hue. Cohesive and sophisticated.',
+            tetradic: 'Two complementary pairs. Rich and diverse.',
+            random: 'Random colors for creative exploration.'
+        };
+
+        function hslToHex(h, s, l) {
+            l = l / 100;
+            const a = s * Math.min(l, 1 - l) / 100;
+            const f = n => {
+                const k = (n + h / 30) % 12;
+                const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+                return Math.round(255 * color).toString(16).padStart(2, '0');
+            };
+            return '#' + f(0) + f(8) + f(4);
+        }
+
+        function generateColors(type, count) {
+            const baseHue = Math.floor(Math.random() * 360);
+            const result = [];
+
+            for (let i = 0; i < count; i++) {
+                let hue = baseHue;
+                
+                if (type === 'complementary') {
+                    hue = i < count / 2 ? baseHue : (baseHue + 180) % 360;
+                } else if (type === 'analogous') {
+                    hue = (baseHue + (i * 30) - 60) % 360;
+                } else if (type === 'triadic') {
+                    hue = (baseHue + (i % 3) * 120) % 360;
+                } else if (type === 'monochromatic') {
+                    hue = baseHue;
+                } else if (type === 'tetradic') {
+                    hue = (baseHue + (i % 4) * 90) % 360;
+                } else {
+                    hue = Math.random() * 360;
+                }
+                
+                const sat = 60 + Math.random() * 30;
+                const light = 35 + Math.random() * 30;
+                result.push(hslToHex(hue, sat, light));
+            }
+            
+            return result;
+        }
+
+        function renderPalette() {
+            const grid = document.getElementById('paletteGrid');
+            grid.innerHTML = '';
+
+            colors.forEach((color, i) => {
+                const item = document.createElement('div');
+                item.className = 'color-item';
+                
+                const box = document.createElement('div');
+                box.className = 'color-box';
+                box.style.backgroundColor = color;
+                box.onclick = () => copyToClipboard(color);
+                
+                const button = document.createElement('button');
+                button.className = 'color-button';
+                button.textContent = color.toUpperCase();
+                button.onclick = () => copyToClipboard(color);
+                
+                item.appendChild(box);
+                item.appendChild(button);
+                grid.appendChild(item);
+            });
+        }
+
+        function renderMockups() {
+            const container = document.getElementById('mockupsContent');
+            container.innerHTML = `
+                <div class="mockup-header">
+                    <div class="mockup-nav" style="background-color: ${colors[0]};">
+                        <div class="mockup-nav-content">
+                            <div class="mockup-brand" style="color: ${colors[colors.length - 1]};">Your Brand</div>
+                            <div class="mockup-menu">
+                                ${['Home', 'About', 'Contact'].map((item, i) => `
+                                    <div class="mockup-menu-item" style="background-color: ${colors[1]}; color: ${colors[colors.length - 1]};">
+                                        ${item}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mockup-content" style="background-color: ${colors[colors.length - 1]};">
+                        <h2 class="mockup-title" style="color: ${colors[0]};">Welcome to Your Website</h2>
+                        <p class="mockup-text" style="color: ${colors[1]};">
+                            This is a preview of how your color palette looks in a real design.
+                        </p>
+                        <button class="mockup-button" style="background-color: ${colors[2]};">Get Started</button>
+                    </div>
+                </div>
+
+                <div class="cards-grid">
+                    ${colors.slice(0, 3).map((color, i) => `
+                        <div class="card" style="background-color: ${color};">
+                            <div class="card-image" style="background-color: ${colors[(i + 1) % colors.length]};"></div>
+                            <div class="card-content">
+                                <h3 class="card-title" style="color: ${colors[colors.length - 1 - i]};">Card ${i + 1}</h3>
+                                <p style="color: ${colors[(i + 2) % colors.length]};">Example content</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="buttons-section">
+                    <h3 class="buttons-title">Button Variations</h3>
+                    <div class="buttons-flex">
+                        ${colors.map((color, i) => `
+                            <button class="demo-button" style="background-color: ${color};">
+                                Button ${i + 1}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateExportPreviews() {
+            const cssCode = ':root {\n' + colors.map((c, i) => `  --color-${i + 1}: ${c};`).join('\n') + '\n}';
+            const jsonCode = JSON.stringify({ palette: colors, type: paletteType }, null, 2);
+            
+            document.getElementById('cssPreview').textContent = cssCode;
+            document.getElementById('jsonPreview').textContent = jsonCode;
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✓ Copied!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            });
+        }
+
+        function downloadFile(content, filename, type) {
+            const blob = new Blob([content], { type });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function exportAsCSS() {
+            const css = ':root {\n' + colors.map((c, i) => `  --color-${i + 1}: ${c};`).join('\n') + '\n}';
+            downloadFile(css, 'palette.css', 'text/css');
+        }
+
+        function exportAsJSON() {
+            const json = JSON.stringify({ palette: colors, type: paletteType }, null, 2);
+            downloadFile(json, 'palette.json', 'application/json');
+        }
+
+        function exportAsImage() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1200;
+            canvas.height = 400;
+            const ctx = canvas.getContext('2d');
+            
+            const width = canvas.width / colors.length;
+            colors.forEach((color, i) => {
+                ctx.fillStyle = color;
+                ctx.fillRect(i * width, 0, width, canvas.height);
+                
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                ctx.shadowBlur = 4;
+                ctx.font = 'bold 24px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(color.toUpperCase(), i * width + width / 2, canvas.height / 2);
+            });
+
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'palette.png';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+        }
+
+        function regeneratePalette() {
+            colors = generateColors(paletteType, colorCount);
+            renderPalette();
+            renderMockups();
+            updateExportPreviews();
+        }
+
+        // Event Listeners
+        document.getElementById('paletteType').addEventListener('change', (e) => {
+            paletteType = e.target.value;
+            document.getElementById('theoryInfo').textContent = theoryInfo[paletteType];
+            regeneratePalette();
+        });
+
+        document.getElementById('colorCount').addEventListener('input', (e) => {
+            colorCount = parseInt(e.target.value);
+            document.getElementById('colorCountLabel').textContent = colorCount;
+            regeneratePalette();
+        });
+
+        document.getElementById('generateBtn').addEventListener('click', regeneratePalette);
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.dataset.tab;
+                
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+                
+                document.getElementById(targetTab + 'Tab').classList.remove('hidden');
+            });
+        });
+
+        // Export buttons
+        document.getElementById('exportCSS').addEventListener('click', exportAsCSS);
+        document.getElementById('exportJSON').addEventListener('click', exportAsJSON);
+        document.getElementById('exportImage').addEventListener('click', exportAsImage);
+
+        // Copy buttons
+        document.getElementById('copyCSSBtn').addEventListener('click', () => {
+            const css = ':root {\n' + colors.map((c, i) => `  --color-${i + 1}: ${c};`).join('\n') + '\n}';
+            copyToClipboard(css);
+        });
+
+        document.getElementById('copyJSONBtn').addEventListener('click', () => {
+            const json = JSON.stringify({ palette: colors, type: paletteType }, null, 2);
+            copyToClipboard(json);
+        });
+
+        // Initialize
+        regeneratePalette();
+    </script>
+</body>
+</html>
